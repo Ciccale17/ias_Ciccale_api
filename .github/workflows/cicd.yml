@@ -1,0 +1,91 @@
+name: CI/CD Pipeline - IAS
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  # ─────────────────────────────────────────
+  # CI: Se ejecuta en todos los PR
+  # ─────────────────────────────────────────
+  ci:
+    name: CI - Tests y Análisis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Tests unitarios
+        run: pytest tests/unit/ -v
+
+      - name: Tests de integración
+        run: pytest tests/integration/ -v
+
+      - name: Análisis de seguridad con Bandit
+        run: bandit -r app/ -ll
+
+      - name: Tests de seguridad (solo PR a main)
+        if: github.base_ref == 'main'
+        run: pytest tests/security/ -v
+
+  # ─────────────────────────────────────────
+  # CD: Deploy a DEV (push a develop)
+  # ─────────────────────────────────────────
+  deploy-dev:
+    name: Deploy a DEV
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs: []
+
+    steps:
+      - name: Deploy a DEV en Render
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_DEV }}"
+          echo "Deploy a DEV iniciado"
+
+  # ─────────────────────────────────────────
+  # CD: Deploy a QA (push a main)
+  # ─────────────────────────────────────────
+  deploy-qa:
+    name: Deploy a QA
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: []
+
+    steps:
+      - name: Deploy a QA en Render
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_QA }}"
+          echo "Deploy a QA iniciado"
+
+  # ─────────────────────────────────────────
+  # CD: Deploy a PRD (aprobación manual)
+  # ─────────────────────────────────────────
+  deploy-prd:
+    name: Deploy a PRD
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [deploy-qa]
+    environment: production
+
+    steps:
+      - name: Deploy a PRD en Render
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK_PRD }}"
+          echo "Deploy a PRD iniciado"
