@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ABM Usuarios - IAS Ciccale API</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fdf0f5;
+      color: #8B2252;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+ 
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+ 
+    header {
+      margin-bottom: 2rem;
+    }
+ 
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #8B2252;
+    }
+ 
+    header p {
+      font-size: 0.875rem;
+      color: #666;
+      margin-top: 4px;
+    }
+ 
+    .api-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 1.5rem;
+      font-size: 0.8rem;
+      color: #888;
+    }
+ 
+    .api-bar input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: #333;
+      background: transparent;
+    }
+ 
+    .api-bar button {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fdf0f5;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #333;
+    }
+ 
+    .api-bar button:hover { background: #fce4ec; }
+ 
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+ 
+    .top-bar h2 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+ 
+    .top-bar span {
+      font-size: 0.8rem;
+      color: #888;
+    }
+ 
+    .btn-new {
+      padding: 9px 18px;
+      background: #8B2252;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+ 
+    .btn-new:hover { background: #a83268; }
+ 
+    .form-card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+ 
+    .form-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #8B2252;
+    }
+ 
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+ 
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+ 
+    .form-group label {
+      font-size: 0.75rem;
+      color: #888;
+      font-weight: 500;
+    }
+ 
+    .form-group input {
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      outline: none;
+      color: #8B2252;
+    }
+ 
+    .form-group input:focus { border-color: #8B2252; }
+ 
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+ 
+    .btn-cancel {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: #555;
+    }
+ 
+    .btn-cancel:hover { background: #fdf0f5; }
+ 
+    .btn-save {
+      padding: 8px 18px;
+      background: #8B2252;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+ 
+    .btn-save:hover { background: #a83268; }
+ 
+    .user-card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: box-shadow 0.15s;
+    }
+ 
+    .user-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+ 
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fce4ec;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #8B2252;
+      flex-shrink: 0;
+    }
+ 
+    .user-info { flex: 1; min-width: 0; }
+ 
+    .user-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #8B2252;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+ 
+    .user-email {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+ 
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+ 
+    .badge-active { background: #e6f4ea; color: #2e7d32; }
+    .badge-inactive { background: #fce4ec; color: #888; }
+ 
+    .card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+ 
+    .btn-edit {
+      padding: 6px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #555;
+    }
+ 
+    .btn-edit:hover { background: #fdf0f5; }
+ 
+    .btn-delete {
+      padding: 6px 12px;
+      border: 1px solid #fcc;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #c62828;
+    }
+ 
+    .btn-delete:hover { background: #fff5f5; }
+ 
+    .empty {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #aaa;
+      font-size: 0.875rem;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e0e0e0;
+    }
+ 
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #8B2252;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 999;
+    }
+ 
+    .toast.show { opacity: 1; }
+ 
+    @media (max-width: 500px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>IAS Ciccale API</h1>
+      <p>Panel de gestión de usuarios</p>
+    </header>
+ 
+    <div class="api-bar">
+      🔗
+      <input id="api-base" type="text" value="https://ias-ciccale-api.onrender.com" />
+      <button onclick="loadUsers()">Conectar</button>
+    </div>
+ 
+    <div class="top-bar">
+      <div>
+        <h2>Usuarios</h2>
+        <span id="user-count">Cargando...</span>
+      </div>
+      <button class="btn-new" onclick="toggleForm()">+ Nuevo usuario</button>
+    </div>
+ 
+    <div class="form-card" id="form-card">
+      <h3 id="form-title">Nuevo usuario</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="f-nombre" placeholder="Juan Pérez" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="f-email" placeholder="juan@example.com" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="cancelForm()">Cancelar</button>
+        <button class="btn-save" onclick="saveUser()" id="btn-save">Crear usuario</button>
+      </div>
+    </div>
+ 
+    <div id="user-list"></div>
+  </div>
+ 
+  <div class="toast" id="toast"></div>
+ 
+  <script>
+    let editingId = null;
+ 
+    function apiBase() {
+      return document.getElementById('api-base').value.replace(/\/$/, '');
+    }
+ 
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+ 
+    function initials(name) {
+      return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+ 
+    async function loadUsers() {
+      const list = document.getElementById('user-list');
+      const count = document.getElementById('user-count');
+      list.innerHTML = '<div class="empty">Conectando con la API...</div>';
+      try {
+        const r = await fetch(apiBase() + '/usuarios');
+        if (!r.ok) throw new Error('Error ' + r.status);
+        const users = await r.json();
+        count.textContent = users.length === 0 ? 'Sin usuarios' : users.length + ' usuario' + (users.length !== 1 ? 's' : '');
+        if (users.length === 0) {
+          list.innerHTML = '<div class="empty">No hay usuarios. Creá el primero.</div>';
+          return;
+        }
+        list.innerHTML = users.map(u => `
+          <div class="user-card" id="card-${u.id}">
+            <div class="avatar">${initials(u.nombre)}</div>
+            <div class="user-info">
+              <div class="user-name">
+                ${u.nombre}
+                <span class="badge ${u.activo ? 'badge-active' : 'badge-inactive'}">${u.activo ? 'activo' : 'inactivo'}</span>
+              </div>
+              <div class="user-email">${u.email}</div>
+            </div>
+            <div class="card-actions">
+              <button class="btn-edit" onclick="editUser(${u.id}, '${u.nombre.replace(/'/g, "\\'")}', '${u.email}')">Editar</button>
+              <button class="btn-delete" onclick="deleteUser(${u.id})">Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = '<div class="empty">No se pudo conectar. Verificá la URL de la API.</div>';
+        count.textContent = 'Sin conexión';
+      }
+    }
+ 
+    function toggleForm() {
+      editingId = null;
+      document.getElementById('f-nombre').value = '';
+      document.getElementById('f-email').value = '';
+      document.getElementById('form-title').textContent = 'Nuevo usuario';
+      document.getElementById('btn-save').textContent = 'Crear usuario';
+      const fc = document.getElementById('form-card');
+      fc.style.display = fc.style.display === 'none' || fc.style.display === '' ? 'block' : 'none';
+      if (fc.style.display === 'block') document.getElementById('f-nombre').focus();
+    }
+ 
+    function cancelForm() {
+      editingId = null;
+      document.getElementById('form-card').style.display = 'none';
+    }
+ 
+    function editUser(id, nombre, email) {
+      editingId = id;
+      document.getElementById('f-nombre').value = nombre;
+      document.getElementById('f-email').value = email;
+      document.getElementById('form-title').textContent = 'Editar usuario';
+      document.getElementById('btn-save').textContent = 'Guardar cambios';
+      document.getElementById('form-card').style.display = 'block';
+      document.getElementById('f-nombre').focus();
+    }
+ 
+    async function saveUser() {
+      const nombre = document.getElementById('f-nombre').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      if (!nombre || !email) { showToast('Nombre y email son obligatorios'); return; }
+      try {
+        let r;
+        if (editingId) {
+          r = await fetch(apiBase() + '/usuarios/' + editingId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, email })
+          });
+        } else {
+          r = await fetch(apiBase() + '/usuarios', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre, email })
+          });
+        }
+        if (!r.ok) {
+          const err = await r.json();
+          showToast(err.error || 'Error al guardar');
+          return;
+        }
+        cancelForm();
+        showToast(editingId ? 'Usuario actualizado ✓' : 'Usuario creado ✓');
+        await loadUsers();
+      } catch (e) { showToast('Error de conexión'); }
+    }
+ 
+    async function deleteUser(id) {
+      if (!confirm('¿Eliminar este usuario?')) return;
+      try {
+        const r = await fetch(apiBase() + '/usuarios/' + id, { method: 'DELETE' });
+        if (!r.ok) { showToast('Error al eliminar'); return; }
+        showToast('Usuario eliminado ✓');
+        await loadUsers();
+      } catch (e) { showToast('Error de conexión'); }
+    }
+ 
+    loadUsers();
+  </script>
+</body>
+</html>
