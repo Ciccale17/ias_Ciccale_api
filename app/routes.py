@@ -8,7 +8,7 @@ usuarios_bp = Blueprint("usuarios", __name__)
 # Healthcheck
 @usuarios_bp.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "mensaje": "API funcionando correctamente"}), 200
+    return jsonify({"status": "ok", "mensaje": "HOLA"}), 200
 
 
 # Listar todos los usuarios
