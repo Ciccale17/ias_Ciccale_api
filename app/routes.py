@@ -1,10 +1,15 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from .models import Usuario
 from .database import db
-from flask import send_file
 import os
 
 usuarios_bp = Blueprint("usuarios", __name__)
+
+
+# Frontend
+@usuarios_bp.route("/", methods=["GET"])
+def index():
+    return send_file(os.path.join(os.path.dirname(__file__), '..', 'index.html'))
 
 
 # Healthcheck
@@ -79,7 +84,3 @@ def eliminar_usuario(usuario_id):
     db.session.delete(usuario)
     db.session.commit()
     return jsonify({"mensaje": "Usuario eliminado correctamente"}), 200
-
-@usuarios_bp.route("/", methods=["GET"])
-def index():
-    return send_file(os.path.join(os.path.dirname(__file__), '..', 'index.html'))
